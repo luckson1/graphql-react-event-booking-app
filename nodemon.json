@@ -1,7 +1,7 @@
 {
     "env": {
         "MONGO_USER": "Eventbooker",
-        "MONGO_PASSWORD": "123456",
-        "MONGO_DB": "expensetracker"
+        "MONGO_PASSWORD": "1234567890",
+        "MONGO_DB": "Eventbooker"
     }
 }
