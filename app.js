@@ -1,6 +1,7 @@
+const { graphqlHTTP } = require("express-graphql");
 const express = require("express");
 const bodyParser = require("body-parser");
-const { graphqlHTTP } = require("express-graphql");
+
 const mongoose = require("mongoose");
 const graphQlSchema=require('./graphql/schema/index');
 const graphQlResolvers=require('./graphql/resolvers/index');
@@ -12,41 +13,27 @@ const app = express();
 
 app.use(bodyParser.json());
 
-const user = (userId) => {
-  return User.findById(userId)
-    .then((user) => {
-      return { ...user._doc, _id: user.id };
-    })
-    .catch((err) => {
-      throw err;
-    });
-};
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
-const event = (eventIds) => {
-  return Event.find({ _id: { $in: eventIds } })
-    .then((event) => {
-      return events.map((event) => {
-        return {
-          ...event._doc,
-          _id: event.id,
-          creator: user.bind(this, event.creator),
-        };
-      });
-    })
-    .catch((err) => {
-      throw err;
-    });
-};
 app.use(isAuth);
 
 app.use(
-  "/graphql",
+  '/graphql',
   graphqlHTTP({
     schema: graphQlSchema,
     rootValue: graphQlResolvers,
-    graphiql: true,
+    graphiql: true
   })
 );
+
 
 mongoose
   .connect(
