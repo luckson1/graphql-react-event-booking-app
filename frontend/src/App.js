@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import "./App.css";
-import { MainNav } from "./components/navigation/MainNav";
+import MainNav  from "./components/navigation/MainNav";
 import Auth from "./pages/Auth";
 import { Bookings } from "./pages/Bookings";
 import { Events } from "./pages/Events";
@@ -32,13 +32,13 @@ function App() {
         >
           <MainNav />
           <main className="main-content">
-            <Routes>
-              {token && (<Route path="/" element={<Navigate to="auth" exact />} />)}
-              {token && (<Route path="/" element={<Navigate to="events" exact />} />)}
-              {token && (<Route path="auth" element={<Navigate to="events" exact />} />)}
+            <Routes>              
+              {token && (<Route path="/" element={<Navigate to="events"  />} />)}
+              {token && (<Route path="auth" element={<Navigate to="events"  />} />)}
               {!token && (<Route path="auth" element={<Auth />} />)}
               {token &&(<Route path="bookings" element={<Bookings />} />)}
               <Route path="events" element={<Events />} />
+              {!token && (<Route path="*" element={<Navigate to="auth" />} />)}
             </Routes>
           </main>
         </AuthContext.Provider>
