@@ -1,48 +1,70 @@
-import React, { useContext, useState } from "react";
-import "./Auth.css";
-import AuthContext from '../context/auth-context';
-const Auth = () => {
-  const myContextValue = useContext(AuthContext);
-  const emailEl = React.createRef();
-  const passwordEl = React.createRef();
-  const [isLogin, setIsLogin] = useState(true);
-  const switchModeHandler = () => setIsLogin(!isLogin);
+import React, { Component } from 'react';
 
-  const submitHandler = event => {
+import './Auth.css';
+import AuthContext from '../context/auth-context';
+
+class AuthPage extends Component {
+  state = {
+    isLogin: true
+  };
+
+  static contextType = AuthContext;
+
+  constructor(props) {
+    super(props);
+    this.emailEl = React.createRef();
+    this.passwordEl = React.createRef();
+  }
+
+  switchModeHandler = () => {
+    this.setState(prevState => {
+      return { isLogin: !prevState.isLogin };
+    });
+  };
+
+  submitHandler = event => {
     event.preventDefault();
-    const email = emailEl.current.value;
-    const password = passwordEl.current.value;  
- 
+    const email = this.emailEl.current.value;
+    const password = this.passwordEl.current.value;
+
     if (email.trim().length === 0 || password.trim().length === 0) {
       return;
     }
 
     let requestBody = {
       query: `
-        query {
-          login(email: "${email}", password: "${password}") {
+        query Login($email: String!, $password: String!) {
+          login(email: $email, password: $password) {
             userId
             token
             tokenExpiration
           }
         }
-      `
+      `,
+      variables: {
+        email: email,
+        password: password
+      }
     };
 
-    if (!isLogin) {
+    if (!this.state.isLogin) {
       requestBody = {
         query: `
-          mutation {
-            createUser(userInput: {email: "${email}", password: "${password}"}) {
+          mutation CreateUser($email: String!, $password: String!) {
+            createUser(userInput: {email: $email, password: $password}) {
               _id
               email
             }
           }
-        `
+        `,
+        variables: {
+          email: email,
+          password: password
+        }
       };
     }
 
-    fetch('http://localhost:5000/graphql', {
+    fetch('http://localhost:8000/graphql', {
       method: 'POST',
       body: JSON.stringify(requestBody),
       headers: {
@@ -57,7 +79,7 @@ const Auth = () => {
       })
       .then(resData => {
         if (resData.data.login.token) {
-          myContextValue.login(
+          this.context.login(
             resData.data.login.token,
             resData.data.login.userId,
             resData.data.login.tokenExpiration
@@ -69,29 +91,26 @@ const Auth = () => {
       });
   };
 
-  
-
-  return (
-    <div>
-      <form className="auth-form" onSubmit={submitHandler}>
+  render() {
+    return (
+      <form className="auth-form" onSubmit={this.submitHandler}>
         <div className="form-control">
           <label htmlFor="email">E-Mail</label>
-          <input type="email" id="email" ref={emailEl} />
+          <input type="email" id="email" ref={this.emailEl} />
         </div>
         <div className="form-control">
           <label htmlFor="password">Password</label>
-          <input type="password" id="password" ref={passwordEl} />
+          <input type="password" id="password" ref={this.passwordEl} />
         </div>
         <div className="form-actions">
           <button type="submit">Submit</button>
-          <button type="button" onClick={switchModeHandler}>
-            Switch to {isLogin ? 'Signup' : 'Login'}
+          <button type="button" onClick={this.switchModeHandler}>
+            Switch to {this.state.isLogin ? 'Signup' : 'Login'}
           </button>
         </div>
       </form>
-    </div>
-  );
-};
+    );
+  }
+}
 
-
-export default Auth;
+export default AuthPage;
